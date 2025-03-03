@@ -1,0 +1,34 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "transaction",
+      "Group": "docker_postgres_group",
+      "Host": "transaction",
+      "Port": 5432,
+      "MaintenanceDB": "transaction",
+      "Username": "postgres",
+      "PassFile": "/pgpass",
+      "SSLMode": "prefer"
+    },
+    "2": {
+      "Name": "usermanagement",
+      "Group": "docker_postgres_group",
+      "Host": "usermanagement",
+      "Port": 5432,
+      "MaintenanceDB": "user_management",
+      "Username": "postgres",
+      "PassFile": "/pgpass",
+      "SSLMode": "prefer"
+    },
+    "3": {
+      "Name": "masterdata",
+      "Group": "docker_postgres_group",
+      "Host": "masterdata",
+      "Port": 5432,
+      "MaintenanceDB": "master_data",
+      "Username": "postgres",
+      "PassFile": "/pgpass",
+      "SSLMode": "prefer"
+    }
+  }
+}

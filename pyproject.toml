@@ -1,0 +1,37 @@
+[project]
+name = "reporting-agent"
+version = "0.1.0"
+description = "Add your description here"
+authors = [
+    { name = "rajatnigam", email = "rajatnigam89@gmail.com" }
+]
+dependencies = [
+    "langchain>=0.3.19",
+    "langgraph>=0.3.0",
+    "langchain-openai>=0.3.7",
+    "black>=25.1.0",
+    "isort>=6.0.1",
+    "langchainhub>=0.1.21",
+    "python-dotenv>=1.0.1",
+    "langchain-community>=0.3.18",
+    "psycopg2>=2.9.10",
+    "psycopg2-binary>=2.9.10",
+    "langgraph-prebuilt>=0.1.0",
+    "grandalf>=0.8",
+]
+readme = "README.md"
+requires-python = ">= 3.8"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.rye]
+managed = true
+dev-dependencies = []
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/reporting_agent"]

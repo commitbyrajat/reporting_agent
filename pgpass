@@ -1,0 +1,3 @@
+transaction:5432:transaction:postgres:postgres
+usermanagement:5432:user_management:postgres:postgres
+masterdata:5432:master_data:postgres:postgres

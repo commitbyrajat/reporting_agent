@@ -1,0 +1,67 @@
+services:
+  transaction:
+    container_name: transaction
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PW}
+      - POSTGRES_DB=${POSTGRES_DB_1}  # Specify default database
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - transaction_data:/var/lib/postgresql/data  # Persistent volume for DB storage
+      - ./sql/transaction:/docker-entrypoint-initdb.d  # Initialize DB on first run
+
+  usermanagement:
+    container_name: usermanagement
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PW}
+      - POSTGRES_DB=${POSTGRES_DB_2}  # Specify default database
+    ports:
+      - "5431:5432"
+    restart: always
+    volumes:
+      - usermanagement_data:/var/lib/postgresql/data  # Persistent volume for DB storage
+      - ./sql/user_management:/docker-entrypoint-initdb.d  # Initialize DB on first run
+
+  masterdata:
+    container_name: masterdata
+    image: postgres:latest
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PW}
+      - POSTGRES_DB=${POSTGRES_DB_3}  # Specify default database
+    ports:
+      - "5433:5432"
+    restart: always
+    volumes:
+      - master_data:/var/lib/postgresql/data  # Persistent volume for DB storage
+      - ./sql/master_data:/docker-entrypoint-initdb.d  # Initialize DB on first run
+
+
+  pgadmin:
+    container_name: pgadmin
+    image: dpage/pgadmin4:latest
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_MAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_PW}
+    ports:
+      - "5050:80"
+    restart: always
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin  # Persistent volume for PGAdmin
+      - ./servers.json:/pgadmin4/servers.json
+      - ./pgpass:/pgpass
+
+volumes:
+  transaction_data:
+    driver: local
+  usermanagement_data:
+    driver: local
+  master_data:
+    driver: local
+  pgadmin_data:
+    driver: local
