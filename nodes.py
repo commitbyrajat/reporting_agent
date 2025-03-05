@@ -1,11 +1,18 @@
 import json
 from typing import List, Iterator, Union, Any, Dict
 
-from langchain_core.messages import BaseMessage, AIMessage, HumanMessage
+from langchain_core.messages import BaseMessage, HumanMessage
 from langgraph.constants import END
 
-from agent import master_data_agent, transaction_agent, user_management_agent
-from chain import parser_tool, first_responder_chain, gaurd_rail
+from agent import (
+    master_data_agent,
+    transaction_agent,
+    user_management_agent,
+    json_to_csv_agent,
+)
+from chain import first_responder_chain, gaurd_rail
+from db import llm
+from glossary import get_formatting_prompt_by_report_name
 from schema import ReportIdentifier
 from state import GraphState
 
@@ -25,7 +32,6 @@ def report_router(state: GraphState) -> str:
     return state["report_name"]
 
 
-
 def execute_net_sales_agent(state: GraphState) -> Dict[str, Any]:
     prompts = {
         "TRANSACTION_DB": """
@@ -37,7 +43,7 @@ def execute_net_sales_agent(state: GraphState) -> Dict[str, Any]:
         ### **Task Overview**
         You are an intelligent assistant responsible for processing structured JSON data. Your task includes:
         1. Extracting all **unique** `fk_id_instrument` values from the given transaction JSON.
-        2. Select columns id, fk_id_product, full_name, fk_id_instrument_category, fundoo_rta_code by querying the **instruments** table where the **primary key (`id`) equals to `fk_id_instrument` values from the given transaction JSON**.
+        2. Query the **instrument** table to retrieve only the columns id, fk_id_product, full_name, fk_id_instrument_category, and fundoo_rta_code, ensuring that the primary key (`id`) matches the `fk_id_instrument` values from the provided transaction JSON.
         3. Converting the query result into JSON.
         4. **Merging instrument’s details into its corresponding transaction JSON under the key `"instrument_details"`.**
         5. Returning the final response **strictly as a valid JSON array** of merged transaction objects.
@@ -55,7 +61,7 @@ def execute_net_sales_agent(state: GraphState) -> Dict[str, Any]:
         You are an intelligent assistant responsible for processing structured JSON data. Your task includes:
         
         1. Extracting all **unique** `fk_id_account` values from the given JSON.
-        2. Select only columns id, "uniqueId" by querying the **account** table where the **primary key (`id`) equals to `fk_id_account` values from the given JSON**.
+        2. Query the **account** table to retrieve only the columns id and "uniqueId", ensuring that the primary key (`id`) matches the `fk_id_account` values from the provided JSON.
         3. Converting the query result into JSON.
         4. **Merging account's details into its corresponding transaction JSON under the key `"account_details"`.**
         5. Returning the final response **strictly as a valid JSON array** of merged transaction objects.
@@ -72,7 +78,7 @@ def execute_net_sales_agent(state: GraphState) -> Dict[str, Any]:
     agents = {
         "TRANSACTION_DB": transaction_agent,
         "MASTER_DATA_DB": master_data_agent,
-        "USER_MANAGEMENT_DB": user_management_agent
+        "USER_MANAGEMENT_DB": user_management_agent,
     }
 
     return {"prompts": prompts, "agents": agents}
@@ -94,6 +100,31 @@ def execute_sql_agent(state: GraphState) -> Dict[str, Any]:
         result = json.loads(event["messages"][-1].content)
 
     return {"agent_result": result}
+
+
+def execute_data_formatting_agent(state: GraphState) -> dict[str, Any]:
+    report_name = state["report_name"]
+    agent_result = state["agent_result"]
+    prompt = get_formatting_prompt_by_report_name(report_name, agent_result)
+    result = llm.invoke(prompt)
+    return {"agent_result": json.loads(result.content)}
+
+
+def execute_json_to_csv_node(state: GraphState) -> dict[str, Any]:
+    agent_result = state["agent_result"]
+    query = f"""
+    Convert the following JSON data into CSV format. Output only the CSV content without any additional text, explanations, formatting, or surrounding characters like triple backticks:
+
+    `{json.dumps(agent_result)}`
+    """
+    events = json_to_csv_agent.stream(
+        {"messages": [("user", query)]}, stream_mode="values"
+    )
+    for event in events:
+        event["messages"][-1].pretty_print()
+
+    return {"agent_result": event["messages"][-1].content}
+
 
 # Obsolete - code | but may be required in future
 def execute_transaction_agent(state: List[BaseMessage]):

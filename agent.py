@@ -4,6 +4,7 @@ from langgraph.checkpoint.memory import MemorySaver
 from langgraph.prebuilt import create_react_agent
 
 from db import llm, transaction_toolkit, master_data_toolkit, user_management_toolkit
+from tools import convert_json_to_csv
 
 load_dotenv()
 
@@ -32,4 +33,9 @@ user_management_agent = create_react_agent(
     name="USER_MANAGEMENT_DB",
     prompt=system_message,
     checkpointer=memory,
+)
+
+json_to_csv_agent = create_react_agent(
+    llm,
+    tools=[convert_json_to_csv],
 )

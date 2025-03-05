@@ -18,6 +18,7 @@ dependencies = [
     "psycopg2-binary>=2.9.10",
     "langgraph-prebuilt>=0.1.0",
     "grandalf>=0.8",
+    "pandas>=2.2.3",
 ]
 readme = "README.md"
 requires-python = ">= 3.8"

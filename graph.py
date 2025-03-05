@@ -7,6 +7,8 @@ from nodes import (
     execute_net_sales_agent,
     first_responder_node,
     execute_sql_agent,
+    execute_data_formatting_agent,
+    execute_json_to_csv_node,
 )
 from state import GraphState
 
@@ -24,7 +26,11 @@ graph.add_node("NET_SALES", execute_net_sales_agent)
 graph.add_node("SQL_AGENT", execute_sql_agent)
 graph.add_edge("NET_SALES", "SQL_AGENT")
 
+graph.add_node("FORMAT_AGENT", execute_data_formatting_agent)
+graph.add_edge("SQL_AGENT", "FORMAT_AGENT")
 
+graph.add_node("JSON_TO_CSV", execute_json_to_csv_node)
+graph.add_edge("FORMAT_AGENT", "JSON_TO_CSV")
 graph = graph.compile()
 print(graph.get_graph().draw_ascii())
 

@@ -30,7 +30,7 @@ class ReportIdentifier(BaseModel):
         examples=[
             ["TRANSACTION_DB", "MASTER_DATA_DB", "USER_MANAGEMENT_DB"],
             ["TRANSACTION_DB"],
-            ["USER_MANAGEMENT_DB"]
+            ["USER_MANAGEMENT_DB"],
         ],
     )
 
