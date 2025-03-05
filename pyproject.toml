@@ -35,3 +35,6 @@ allow-direct-references = true
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/reporting_agent"]
+
+[tool.rye.scripts]
+graph = "python graph.py"

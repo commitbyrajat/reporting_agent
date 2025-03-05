@@ -1,36 +1,45 @@
 from dotenv import load_dotenv
-from langgraph.graph import MessageGraph
+from langgraph.graph import StateGraph
 
-from chain import first_responder
+from chain import gaurd_rail
 from nodes import (
-    agent_router,
-    execute_master_data_agent,
-    execute_user_management_agent,
-    execute_transaction_agent,
+    report_router,
+    execute_net_sales_agent,
+    first_responder_node,
+    execute_sql_agent,
 )
+from state import GraphState
 
 load_dotenv()
-graph = MessageGraph()
-graph.add_node("first_responder", first_responder)
+graph = StateGraph(GraphState)
+graph.add_node("first_responder", first_responder_node)
 graph.set_entry_point("first_responder")
 
-graph.add_conditional_edges("first_responder", agent_router)
 
-graph.add_node("MASTER_DATA_DB", execute_master_data_agent)
-graph.add_node("USER_MANAGEMENT_DB", execute_user_management_agent)
-graph.add_node("TRANSACTION_DB", execute_transaction_agent)
+graph.add_conditional_edges(
+    "first_responder", report_router, {"NET_SALES": "NET_SALES"}
+)
+
+graph.add_node("NET_SALES", execute_net_sales_agent)
+graph.add_node("SQL_AGENT", execute_sql_agent)
+graph.add_edge("NET_SALES", "SQL_AGENT")
 
 
 graph = graph.compile()
 print(graph.get_graph().draw_ascii())
 
 if __name__ == "__main__":
+
     messages = [
-        "What all mutual funds are available from HDFC AMC ?",
-        "what is the name in user's account where bos code is 900492549?",
+        "Generate net sales report.",
+        # "what is the name in user's account where bos code is 900492549?",
     ]
 
     for msg in messages:
-        result = graph.invoke(msg)
-        print("======================================================================")
-        print(result[-1].content)
+        query = gaurd_rail.format(msg)
+        result = graph.invoke(input={"query": query})
+        print(
+            "==================================Graph Output===================================="
+        )
+        response = result["agent_result"]
+        print(response)
